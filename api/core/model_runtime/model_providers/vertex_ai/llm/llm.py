@@ -2,6 +2,7 @@ import base64
 import io
 import json
 import logging
+import mimetypes
 import time
 from collections.abc import Generator
 from typing import Optional, Union, cast
@@ -656,8 +657,10 @@ class VertexAiLargeLanguageModel(LargeLanguageModel):
                     else:
                         message_content = cast(ImagePromptMessageContent, c)
                         if not message_content.data.startswith("data:"):
-                            url_arr = message_content.data.split(".")
-                            mime_type = f"image/{url_arr[-1]}"
+                            url = message_content.data
+                            if "?" in url:
+                                url = url.split("?")[0]
+                            mime_type, _ = mimetypes.guess_type(url)
                             parts.append(glm.Part.from_uri(mime_type=mime_type, uri=message_content.data))
                         else:
                             metadata, data = c.data.split(",", 1)
